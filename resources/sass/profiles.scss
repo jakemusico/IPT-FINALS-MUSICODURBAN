@@ -1,0 +1,100 @@
+/* Profiles page custom theme */
+
+:root {
+  --pm-bg: #0f172a;           /* slate-900 */
+  --pm-card: #111827;         /* gray-900 */
+  --pm-soft: #1f2937;         /* gray-800 */
+  --pm-accent: #08c5a7;       /* teal */
+  --pm-accent-2: #7c3aed;     /* violet */
+  --pm-text: #e5e7eb;         /* gray-200 */
+  --pm-muted: #9ca3af;        /* gray-400 */
+  --pm-border: #374151;       /* gray-700 */
+  --pm-danger: #ef4444;       /* red-500 */
+  --pm-success: #10b981;      /* emerald-500 */
+}
+
+body {
+  background: radial-gradient(1200px 800px at 80% -200px, rgba(124, 58, 237, 0.25), transparent 60%),
+              radial-gradient(900px 600px at 20% -150px, rgba(8, 197, 167, 0.25), transparent 60%),
+              var(--pm-bg);
+  color: var(--pm-text);
+}
+
+.pm-hero {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(8, 197, 167, 0.25));
+  border: 1px solid var(--pm-border);
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+.pm-hero h2 {
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+
+.pm-hero .subtitle {
+  color: var(--pm-muted);
+}
+
+.pm-card {
+  background: linear-gradient(180deg, var(--pm-card), var(--pm-soft));
+  border: 1px solid var(--pm-border);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+}
+
+.pm-card .card-header {
+  border-bottom: 1px solid var(--pm-border);
+  background: transparent;
+  color: var(--pm-text);
+}
+
+.pm-card .card-body {
+  color: var(--pm-text);
+}
+
+.pm-input.form-control,
+.pm-input.form-control:focus {
+  background-color: #0b1220;
+  color: var(--pm-text);
+  border: 1px solid var(--pm-border);
+}
+
+.pm-btn-primary {
+  background: linear-gradient(135deg, var(--pm-accent), var(--pm-accent-2));
+  border: none;
+  color: white;
+}
+.pm-btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.pm-btn-outline {
+  border-color: var(--pm-border);
+  color: var(--pm-text);
+}
+
+.pm-table thead th {
+  color: var(--pm-muted);
+  border-color: var(--pm-border);
+}
+.pm-table td, .pm-table th {
+  border-color: var(--pm-border) !important;
+}
+
+.pm-badge {
+  display: inline-block;
+  padding: .2rem .5rem;
+  border-radius: 999px;
+  background: rgba(8,197,167,.15);
+  color: var(--pm-accent);
+  font-size: .75rem;
+}
+
+.pm-badge.secondary { background: rgba(124,58,237,.15); color: var(--pm-accent-2); }
+
+.pm-footer-note {
+  color: var(--pm-muted);
+  font-size: .875rem;
+}
