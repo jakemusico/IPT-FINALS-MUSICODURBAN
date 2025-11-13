@@ -1,11 +1,14 @@
-// Fonts
-@import url('https://fonts.googleapis.com/css?family=Nunito');
+// Fonts (Inter + Nunito)
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Nunito&display=swap');
 
 // Variables
 @import 'variables';
 
 // Bootstrap
 @import '~bootstrap/scss/bootstrap';
+
+// typography helpers
+@import './typography.scss';
 
 @import './home.scss';
 @import './profiles.scss';

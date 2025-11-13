@@ -18,6 +18,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Dashboard JSON endpoint (convenience)
+Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index']);
+
 // Fallback for all non-API routes so React Router can handle them
 Route::get('/{any}', function () {
     return view('welcome');

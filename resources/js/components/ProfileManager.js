@@ -1,306 +1,255 @@
-import React, { useEffect, useState } from 'react';
+// import React, { useEffect, useState } from 'react'
 
-export default function ProfileManager() {
-  const [searchInput, setSearchInput] = useState('');
-  // Set page background color for a modern look
-  useEffect(() => {
-    const prevBg = document.body.style.background;
-    const prevFilter = document.body.style.backdropFilter;
-    document.body.style.background =
-      "url('https://live.staticflickr.com/3571/3555313681_b477fe9d44_b.jpg') center center / cover no-repeat fixed";
-    document.body.style.backdropFilter = 'blur(4px)';
-    return () => {
-      document.body.style.background = prevBg;
-      document.body.style.backdropFilter = prevFilter;
-    };
-  }, []);
-  const [profiles, setProfiles] = useState([]);
-  const [form, setForm] = useState({ fname: '', lname: '', email: '', contact: '', age: '' });
-  const [editingId, setEditingId] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [lastRefreshed, setLastRefreshed] = useState('');
-  const [filter, setFilter] = useState('');
+// export default function ProfileManager() {
+//   const token = (() => { try { return localStorage.getItem('api_token') } catch(e){ return null } })()
+//   const authHeader = token ? { 'Authorization': `Bearer ${token}` } : {}
+//   const [students, setStudents] = useState([])
+//   const [departments, setDepartments] = useState([])
+//   const [loading, setLoading] = useState(false)
+//   const [error, setError] = useState('')
+//   const [query, setQuery] = useState('')
+//   const [filterCourse, setFilterCourse] = useState('')
+//   const [filterDept, setFilterDept] = useState('')
+//   const [formVisible, setFormVisible] = useState(false)
+//   const [form, setForm] = useState({ fname: '', lname: '', email: '', contact: '', age: '', student_id: '', course: '', department: '', year: '', gpa: '', status: '' })
+//   const [editingId, setEditingId] = useState(null)
 
-  const resetMessages = () => {
-    setError('');
-    setMessage('');
-  };
+//   const fetchStudents = async () => {
+//     setLoading(true)
+//     try {
+//       const res = await fetch('/api/students', { headers: authHeader })
+//       const js = await res.json()
+//       if (!res.ok) throw new Error(js.message || 'Failed')
+//       setStudents(js.data || [])
+//     } catch (e) { setError(e.message) } finally { setLoading(false) }
+//   }
 
-  const fetchProfiles = async () => {
-    resetMessages();
-    setLoading(true);
-    try {
-      const res = await fetch('/api/profiles');
-      const json = await res.json();
-      if (!res.ok || json.success === false) throw new Error(json.message || 'Failed to fetch');
-      setProfiles(Array.isArray(json.data) ? json.data : []);
-      setLastRefreshed(new Date().toLocaleString());
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+//   const fetchDepartments = async () => {
+//     try {
+//   const res = await fetch('/api/departments', { headers: authHeader })
+//       const js = await res.json()
+//       if (res.ok && js.data) setDepartments(js.data)
+//     } catch (e) { /* ignore */ }
+//   }
 
-  useEffect(() => {
-    fetchProfiles();
-  }, []);
+//   useEffect(() => { fetchStudents(); fetchDepartments() }, [])
 
-  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+//   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    resetMessages();
+//   const onSubmit = async (e) => {
+//     e.preventDefault(); setError('')
+//     try {
+//       const payload = {
+//         fname: form.fname,
+//         lname: form.lname,
+//         email: form.email,
+//         contact: form.contact || null,
+//         age: form.age === '' ? null : Number(form.age),
+//         student_id: form.student_id || null,
+//         course: form.course || null,
+//         department: form.department || null,
+//         year: form.year || null,
+//         gpa: form.gpa === '' ? null : Number(form.gpa),
+//         status: form.status || null,
+//         join_date: form.join_date || null,
+//       }
 
-        if (!form.fname.trim() || !form.lname.trim() || !form.email.trim() || !form.contact.trim() || !form.age) {
-          let missing = [];
-          if (!form.fname.trim()) missing.push('First name');
-          if (!form.lname.trim()) missing.push('Last name');
-          if (!form.email.trim()) missing.push('Email');
-          if (!form.contact.trim()) missing.push('Contact');
-          if (!form.age) missing.push('Age');
-          setError(missing.length ? missing.join(', ') + ' ' + (missing.length === 1 ? 'is' : 'are') + ' required.' : '');
-          return;
-        }
-        if (form.contact.length !== 11) {
-          setError('Contact must be exactly 11 digits.');
-          return;
-        }
+//   const res = await fetch('/api/students', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader }, body: JSON.stringify(payload) })
+//       const js = await res.json()
+//       if (!res.ok) throw new Error(js.message || 'Create failed')
+//       setForm({ fname: '', lname: '', email: '', contact: '', age: '', student_id: '', course: '', department: '', year: '', gpa: '', status: '' })
+//       setFormVisible(false)
+//       await fetchStudents()
+//     } catch (err) { setError(err.message) }
+//   }
 
-    setLoading(true);
-    try {
-      const res = await fetch('/api/profiles', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({
-          fname: form.fname.trim(),
-          lname: form.lname.trim(),
-          email: form.email.trim(),
-          contact: form.contact.trim() || null,
-          age: form.age !== '' ? Number(form.age) : null,
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok || json.success === false) throw new Error(json.message || 'Create failed');
-      setMessage('Profile created successfully.');
-  setForm({ fname: '', lname: '', email: '', contact: '', age: '' });
-      await fetchProfiles();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+//   const startEdit = (s) => { setEditingId(s.id); setForm({ fname: s.fname||'', lname: s.lname||'', email: s.email||'', contact: s.contact||'', age: s.age ?? '', student_id: s.student_id||'', course: s.course||'', department: s.department||'', year: s.year||'', gpa: s.gpa ?? '', status: s.status||'', join_date: s.join_date||'' }); setFormVisible(true) }
+//   const cancel = () => { setEditingId(null); setForm({ fname: '', lname: '', email: '', contact: '', age: '', student_id: '', course: '', department: '', year: '', gpa: '', status: '' }); setFormVisible(false) }
 
-  const startEdit = (p) => {
-    setEditingId(p.id);
-    setForm({
-      fname: p.fname || '',
-      lname: p.lname || '',
-      email: p.email || '',
-      contact: p.contact || '',
-      age: p.age == null ? '' : String(p.age),
-    });
-  };
+//   const confirmEdit = async () => {
+//     if (!editingId) return
+//     try {
+//       const payload = {
+//         fname: form.fname,
+//         lname: form.lname,
+//         email: form.email,
+//         contact: form.contact || null,
+//         age: form.age === '' ? null : Number(form.age),
+//         student_id: form.student_id || null,
+//         course: form.course || null,
+//         department: form.department || null,
+//         year: form.year || null,
+//         gpa: form.gpa === '' ? null : Number(form.gpa),
+//         status: form.status || null,
+//         join_date: form.join_date || null,
+//       }
 
-  const cancelEdit = () => {
-  setEditingId(null);
-  setForm({ fname: '', lname: '', email: '', contact: '', age: '' });
-  };
+//   const res = await fetch(`/api/students/${editingId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader }, body: JSON.stringify(payload) })
+//       const js = await res.json()
+//       if (!res.ok) throw new Error(js.message || 'Update failed')
+//       cancel(); await fetchStudents()
+//     } catch (err) { setError(err.message) }
+//   }
 
-  const confirmEdit = async () => {
-    if (!editingId) return;
-    resetMessages();
-    if (!form.fname.trim() || !form.lname.trim() || !form.email.trim()) {
-      setError('Firstname, Lastname, and Email are required.');
-      return;
-    }
-    setLoading(true);
-    try {
-      // Use PATCH to allow partial updates and include age when provided
-      const res = await fetch(`/api/profiles/${editingId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({
-          fname: form.fname.trim(),
-          lname: form.lname.trim(),
-          email: form.email.trim(),
-          contact: form.contact.trim() || null,
-          age: form.age === '' ? null : Number(form.age),
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok || json.success === false) throw new Error(json.message || 'Update failed');
-      setMessage('Profile updated successfully.');
-      cancelEdit();
-      await fetchProfiles();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+//   const remove = async (id) => {
+//     if (!window.confirm('Delete this student?')) return
+//     try {
+//   const res = await fetch(`/api/students/${id}`, { method: 'DELETE', headers: authHeader })
+//       const js = await res.json()
+//       if (!res.ok) throw new Error(js.message || 'Delete failed')
+//       await fetchStudents()
+//     } catch (err) { setError(err.message) }
+//   }
 
-  const remove = async (id) => {
-    if (!confirm('Delete this profile?')) return;
-    resetMessages();
-    setLoading(true);
-    const confirmed = window.confirm('Are you sure you want to delete this profile? This action cannot be undone.');
-    if (!confirmed) return;
-    try {
-      const res = await fetch(`/api/profiles/${id}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || (json.success === false)) throw new Error(json.message || 'Delete failed');
-      setMessage('Profile deleted successfully.');
-      await fetchProfiles();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+//   const courses = Array.from(new Set(students.map(s => s.course).filter(Boolean)))
 
-  return (
-  <div style={{ maxWidth: 1100, minHeight: '100vh', margin: '0 auto', padding: 28, background: 'rgba(255,255,255,0.75)', borderRadius: 14, boxShadow: '0 4px 24px #0003', color: '#1a237e', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', backdropFilter: 'blur(2px)' }}>
-      <h2 style={{ marginBottom: 10, fontWeight: 700, color: '#111' }}>Musico Student Profiles</h2>
-      <div style={{ marginBottom: 16, color: '#222', fontSize: 16, fontWeight: 500 }}>
-        <span>Total: {profiles.length}</span> &nbsp;|&nbsp; <span>Last update: {lastRefreshed || '—'}</span>
-      </div>
-      {error && (
-        <div style={{ background: '#ffe5e5', color: '#a00', padding: 10, borderRadius: 4, marginBottom: 12, fontWeight: 600, position: 'relative' }}>
-          <span>{error}</span>
-          <button
-            onClick={() => setError('')}
-            style={{
-              position: 'absolute',
-              top: 6,
-              right: 10,
-              background: 'none',
-              border: 'none',
-              color: '#a00',
-              fontWeight: 900,
-              fontSize: 20,
-              cursor: 'pointer',
-              lineHeight: 1,
-            }}
-            aria-label="Close error"
-          >
-            ×
-          </button>
-        </div>
-      )}
-      {message && <div style={{ background: '#e5ffe5', color: '#0a0', padding: 10, borderRadius: 4, marginBottom: 12, fontWeight: 600 }}>{message}</div>}
-      <form onSubmit={onSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
-  <input name="fname" placeholder="First name" value={form.fname} onChange={onChange} style={{ flex: 1, minWidth: 120, padding: 8, color: '#111', background: '#fff', border: '1px solid #bbb', fontWeight: 500 }} />
-  <input name="lname" placeholder="Last name" value={form.lname} onChange={onChange} style={{ flex: 1, minWidth: 120, padding: 8, color: '#111', background: '#fff', border: '1px solid #bbb', fontWeight: 500 }} />
-  <input name="email" placeholder="Email" value={form.email} onChange={onChange} style={{ flex: 1, minWidth: 180, padding: 8, color: '#111', background: '#fff', border: '1px solid #bbb', fontWeight: 500 }} />
-  <input
-    name="contact"
-    placeholder="Contact"
-    value={form.contact}
-    onChange={e => {
-      const val = e.target.value.replace(/[^0-9]/g, '');
-      if (val.length <= 11) {
-        setForm(f => ({ ...f, contact: val }));
-      }
-    }}
-    maxLength={11}
-    inputMode="numeric"
-    style={{ flex: 1, minWidth: 120, padding: 8, color: '#111', background: '#fff', border: '1px solid #bbb', fontWeight: 500 }}
-  />
-  <input type="number" min="0" max="150" name="age" placeholder="Age" value={form.age} onChange={onChange} style={{ flex: 1, minWidth: 80, padding: 8, color: '#111', background: '#fff', border: '1px solid #bbb', fontWeight: 500 }} />
-        {editingId ? (
-          <>
-            <button type="button" onClick={confirmEdit} disabled={loading} style={{ background: '#1976d2', color: '#fff', border: 0, borderRadius: 4, padding: '8px 16px', fontWeight: 700 }}>Save</button>
-            <button type="button" onClick={cancelEdit} disabled={loading} style={{ background: '#eee', color: '#333', border: 0, borderRadius: 4, padding: '8px 16px', fontWeight: 700 }}>Cancel</button>
-          </>
-        ) : (
-          <button type="submit" disabled={loading} style={{ background: '#1976d2', color: '#fff', border: 0, borderRadius: 4, padding: '8px 16px', fontWeight: 700 }}>Create</button>
-        )}
-      </form>
-      <div style={{ display: 'flex', gap: 10, marginBottom: 18, alignItems: 'center' }}>
-        <div style={{ display: 'flex', flex: 1, gap: 10, alignItems: 'center' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            <input
-              placeholder="Filter by name, email, contact, or age"
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              style={{ width: '100%', height: 40, padding: '8px 32px 8px 8px', color: '#111', background: '#fff', border: '1px solid #bbb', borderRadius: 4, fontWeight: 500, fontSize: 16, boxSizing: 'border-box' }}
-            />
-            {searchInput && (
-              <button
-                onClick={() => { setSearchInput(''); setFilter(''); }}
-                style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 0, color: '#888', fontSize: 18, cursor: 'pointer', padding: 0, lineHeight: 1 }}
-                aria-label="Clear search"
-              >
-                ×
-              </button>
-            )}
-          </div>
-          <button
-            onClick={() => setFilter(searchInput)}
-            style={{ background: '#1976d2', color: '#fff', border: 0, borderRadius: 4, padding: '8px 16px', fontWeight: 700, fontSize: 16, boxShadow: '0 2px 8px #0001', transition: 'background 0.2s', height: 40, minWidth: 90, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            Search
-          </button>
-        </div>
-      </div>
-      <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16, color: '#111', background: '#fff', borderRadius: 14, overflow: 'hidden' }}>
-          <thead>
-            <tr style={{ background: 'rgba(33, 150, 243, 0.92)' }}>
-              <th style={{ padding: '14px 10px', border: '1px solid #bbb', color: '#fff', fontWeight: 700, textAlign: 'center', borderTopLeftRadius: 8, letterSpacing: 1 }}>#</th>
-              <th style={{ padding: '14px 10px', border: '1px solid #bbb', color: '#fff', fontWeight: 700, whiteSpace: 'nowrap', textAlign: 'center', letterSpacing: 1 }}>First name</th>
-              <th style={{ padding: '14px 10px', border: '1px solid #bbb', color: '#fff', fontWeight: 700, whiteSpace: 'nowrap', textAlign: 'center', letterSpacing: 1 }}>Last name</th>
-              <th style={{ padding: '14px 10px', border: '1px solid #bbb', color: '#fff', fontWeight: 700, textAlign: 'center', letterSpacing: 1 }}>Email</th>
-              <th style={{ padding: '14px 10px', border: '1px solid #bbb', color: '#fff', fontWeight: 700, textAlign: 'center', letterSpacing: 1 }}>Contact</th>
-              <th style={{ padding: '14px 10px', border: '1px solid #bbb', color: '#fff', fontWeight: 700, textAlign: 'center', letterSpacing: 1 }}>Age</th>
-              <th style={{ padding: '14px 10px', border: '1px solid #bbb', color: '#fff', fontWeight: 700, textAlign: 'center', letterSpacing: 1 }}>Created</th>
-              <th style={{ padding: '14px 10px', border: '1px solid #bbb', color: '#fff', fontWeight: 700, textAlign: 'center', letterSpacing: 1 }}>Updated</th>
-              <th style={{ padding: '14px 10px', border: '1px solid #bbb', color: '#fff', fontWeight: 700, textAlign: 'center', borderTopRightRadius: 8, letterSpacing: 1 }}>Manage</th>
-            </tr>
-          </thead>
-          <tbody>
-            {profiles
-              .filter((p) => {
-                const q = filter.trim().toLowerCase();
-                if (!q) return true;
-                return (
-                  String(p.fname || '').toLowerCase().includes(q) ||
-                  String(p.lname || '').toLowerCase().includes(q) ||
-                  String(p.email || '').toLowerCase().includes(q) ||
-                  String(p.contact || '').toLowerCase().includes(q) ||
-                  String(String(p.age ?? '')).toLowerCase().includes(q)
-                );
-              })
-              .map((p, idx) => (
-                <tr key={p.id}>
-                  <td style={{ padding: 8, border: '1px solid #bbb', textAlign: 'center', fontWeight: 600 }}>{idx + 1}</td>
-                  <td style={{ padding: 8, border: '1px solid #bbb' }}>{p.fname}</td>
-                  <td style={{ padding: 8, border: '1px solid #bbb' }}>{p.lname}</td>
-                  <td style={{ padding: 8, border: '1px solid #bbb' }}>{p.email}</td>
-                  <td style={{ padding: 8, border: '1px solid #bbb' }}>{p.contact || '—'}</td>
-                  <td style={{ padding: 8, border: '1px solid #bbb', textAlign: 'center' }}>{p.age ?? '—'}</td>
-                  <td style={{ padding: 8, border: '1px solid #bbb' }}>{p.created_at ? new Date(p.created_at).toLocaleString() : '—'}</td>
-                  <td style={{ padding: 8, border: '1px solid #bbb' }}>{p.updated_at ? new Date(p.updated_at).toLocaleString() : '—'}</td>
-                  <td style={{ padding: 8, border: '1px solid #bbb' }}>
-                      <div style={{ display: 'flex', flexDirection: 'row', gap: 8, justifyContent: 'center', alignItems: 'center' }}>
-                        <button onClick={() => startEdit(p)} style={{ background: '#eee', color: '#1976d2', border: 0, borderRadius: 4, padding: '6px 12px', marginRight: 4, fontSize: 15, fontWeight: 600 }}>Edit</button>
-                        <button onClick={() => remove(p.id)} style={{ background: '#ffe5e5', color: '#a00', border: 0, borderRadius: 4, padding: '6px 12px', fontSize: 15, fontWeight: 600 }}>Delete</button>
-                      </div>
-                  </td>
-                </tr>
-              ))}
-            {profiles.length === 0 && (
-              <tr>
-                <td colSpan="9" style={{ textAlign: 'center', padding: 14, color: '#888', fontWeight: 600 }}>{loading ? 'Loading...' : 'No profiles yet.'}</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+//   const filtered = students.filter(s => {
+//     const q = query.trim().toLowerCase()
+//     if (q && !(String(s.fname||'').toLowerCase().includes(q) || String(s.lname||'').toLowerCase().includes(q) || String(s.email||'').toLowerCase().includes(q) || String(s.student_id||'').toLowerCase().includes(q))) return false
+//     if (filterCourse && (s.course || '') !== filterCourse) return false
+//     if (filterDept && (s.department || '') !== filterDept) return false
+//     return true
+//   })
+
+//   const initials = (s) => {
+//     const a = (s.fname||'').trim().charAt(0) || ''
+//     const b = (s.lname||'').trim().charAt(0) || ''
+//     return (a+b).toUpperCase()
+//   }
+
+//   return (
+//     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+//       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+//         <div>
+//           <h2 style={{ margin: 0 }}>Student Management</h2>
+//           <div style={{ color: '#4b5563' }}>Manage student enrollments, profiles, and academic records.</div>
+//         </div>
+//         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+//           <button onClick={() => { setFormVisible(true); setEditingId(null); setForm({ fname: '', lname: '', email: '', contact: '', age: '', student_id: '', course: '', department: '', year: '', gpa: '', status: '' }) }} style={{ background: '#2e7d32', color: '#fff', border: 0, padding: '10px 16px', borderRadius: 8 }}>+ Add Student</button>
+//         </div>
+//       </div>
+
+//       <div style={{ background: '#fff', padding: 16, borderRadius: 12 }}>
+//         <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+//           <input placeholder="Search by name, email, or student ID..." value={query} onChange={e => setQuery(e.target.value)} style={{ flex: 1, padding: '12px 14px', borderRadius: 8, border: '1px solid #eee' }} />
+//           <select value={filterCourse} onChange={e => setFilterCourse(e.target.value)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #eee' }}>
+//             <option value="">All Courses</option>
+//             {courses.map(c => <option key={c} value={c}>{c}</option>)}
+//           </select>
+//           <select value={filterDept} onChange={e => setFilterDept(e.target.value)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #eee' }}>
+//             <option value="">All Departments</option>
+//             {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+//           </select>
+//         </div>
+
+//         <div style={{ marginTop: 8 }}>
+//           <h3 style={{ marginTop: 0 }}>Students ({filtered.length})</h3>
+//           <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #f0f0f0' }}>
+//             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+//               <thead style={{ background: '#fafafa' }}>
+//                 <tr>
+//                   <th style={{ textAlign: 'left', padding: 16 }}>Student</th>
+//                   <th style={{ padding: 16, textAlign: 'left' }}>Course</th>
+//                   <th style={{ padding: 16 }}>Department</th>
+//                   <th style={{ padding: 16 }}>Year</th>
+//                   <th style={{ padding: 16 }}>GPA</th>
+//                   <th style={{ padding: 16 }}>Status</th>
+//                   <th style={{ padding: 16 }}>Actions</th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {filtered.map((s, i) => (
+//                   <tr key={s.id} style={{ borderTop: '1px solid #f2f2f2' }}>
+//                     <td style={{ padding: 14, display: 'flex', gap: 12, alignItems: 'center' }}>
+//                       <div style={{ width: 44, height: 44, borderRadius: 22, background: '#0b2340', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>{initials(s)}</div>
+//                       <div>
+//                         <div style={{ fontWeight: 700 }}>{s.fname} {s.lname}</div>
+//                         <div style={{ color: '#6b7280', fontSize: 13 }}>{s.student_id || ''}{s.student_id ? <span style={{ display: 'block' }}>{s.email}</span> : <span style={{ display: 'block' }}>{s.email}</span>}</div>
+//                       </div>
+//                     </td>
+//                     <td style={{ padding: 14 }}>{s.course || '—'}</td>
+//                     <td style={{ padding: 14 }}>{s.department || '—'}</td>
+//                     <td style={{ padding: 14 }}>{s.year || '—'}</td>
+//                     <td style={{ padding: 14, color: '#2e7d32', fontWeight: 700 }}>{s.gpa ?? '—'}</td>
+//                     <td style={{ padding: 14 }}>
+//                       <span style={{ display: 'inline-block', padding: '6px 10px', borderRadius: 16, background: (s.status === 'Inactive' ? '#e57373' : '#2e7d32'), color: '#fff', fontWeight: 700, fontSize: 12 }}>{s.status || 'Active'}</span>
+//                     </td>
+//                     <td style={{ padding: 14, position: 'relative' }}>
+//                       <div style={{ position: 'relative', display: 'inline-block' }} onClick={e => e.stopPropagation()}>
+//                         <button
+//                           onClick={e => { e.stopPropagation(); startEdit(s) }}
+//                           style={{
+//                             background: '#fff',
+//                             border: 'none',
+//                             padding: '10px 12px',
+//                             borderRadius: 10,
+//                             cursor: 'pointer',
+//                             minWidth: 44,
+//                             minHeight: 44,
+//                             display: 'flex',
+//                             alignItems: 'center',
+//                             justifyContent: 'center',
+//                             boxShadow: '0 1px 2px rgba(2,6,23,0.06)',
+//                             outline: 'none'
+//                           }}
+//                         >
+//                           ⋯
+//                         </button>
+//                       </div>
+//                     </td>
+//                   </tr>
+//                 ))}
+//                 {filtered.length === 0 && (
+//                   <tr>
+//                     <td colSpan="7" style={{ textAlign: 'center', padding: 20, color: '#6b7280' }}>{loading ? 'Loading...' : 'No students yet.'}</td>
+//                   </tr>
+//                 )}
+//               </tbody>
+//             </table>
+//           </div>
+//         </div>
+//       </div>
+
+//       {formVisible && (
+//         <div style={{ background: '#fff', padding: 16, borderRadius: 12 }}>
+//           <h3 style={{ marginTop: 0 }}>{editingId ? 'Edit Student' : 'Add Student'}</h3>
+//           <form onSubmit={onSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+//             <input name="fname" placeholder="First name" value={form.fname} onChange={onChange} style={{ padding: 10, flex: '1 1 200px' }} />
+//             <input name="lname" placeholder="Last name" value={form.lname} onChange={onChange} style={{ padding: 10, flex: '1 1 200px' }} />
+//             <input name="email" placeholder="Email" value={form.email} onChange={onChange} style={{ padding: 10, flex: '1 1 260px' }} />
+//             <input name="student_id" placeholder="Student ID" value={form.student_id} onChange={onChange} style={{ padding: 10, flex: '1 1 160px' }} />
+//             <select name="course" value={form.course} onChange={onChange} style={{ padding: 10, flex: '1 1 220px' }}>
+//               <option value="">Select course</option>
+//               {courses.map(c => <option key={c} value={c}>{c}</option>)}
+//             </select>
+//             <select name="department" value={form.department} onChange={onChange} style={{ padding: 10, flex: '1 1 220px' }}>
+//               <option value="">Select department</option>
+//               {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+//             </select>
+//             <input name="year" placeholder="Year (e.g. 3rd Year)" value={form.year} onChange={onChange} style={{ padding: 10, flex: '1 1 160px' }} />
+//             <input name="gpa" placeholder="GPA" value={form.gpa} onChange={onChange} style={{ padding: 10, flex: '1 1 120px' }} />
+//             <select name="status" value={form.status} onChange={onChange} style={{ padding: 10, flex: '1 1 160px' }}>
+//               <option value="">Status</option>
+//               <option value="Active">Active</option>
+//               <option value="Inactive">Inactive</option>
+//               <option value="On Leave">On Leave</option>
+//             </select>
+//             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+//               {editingId ? (
+//                 <>
+//                   <button type="button" onClick={confirmEdit} style={{ background: '#1976d2', color: '#fff', padding: '8px 14px', borderRadius: 8, border: 0 }}>Save</button>
+//                   <button type="button" onClick={cancel} style={{ background: '#eee', padding: '8px 14px', borderRadius: 8, border: 0 }}>Cancel</button>
+//                 </>
+//               ) : (
+//                 <>
+//                   <button type="submit" style={{ background: '#1976d2', color: '#fff', padding: '8px 14px', borderRadius: 8, border: 0 }}>Create</button>
+//                   <button type="button" onClick={() => setFormVisible(false)} style={{ background: '#eee', padding: '8px 14px', borderRadius: 8, border: 0 }}>Close</button>
+//                 </>
+//               )}
+//             </div>
+//           </form>
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
