@@ -417,7 +417,10 @@ export default function DepartmentDetail(){
           {!dept.archived ? (
             <button onClick={archiveDept} style={{ background: '#fff', border: '1px solid #f1f1f1', padding: '8px 12px', borderRadius: 8, cursor: 'pointer' }}>Archive</button>
           ) : (
-            <button onClick={restoreDept} style={{ background: '#fff', border: '1px solid #e5e7eb', padding: '8px 12px', borderRadius: 8, cursor: 'pointer', color: TEXT.primary, fontWeight: 700 }}>Restore</button>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button onClick={restoreDept} style={{ background: '#fff', border: '1px solid #e5e7eb', padding: '8px 12px', borderRadius: 8, cursor: 'pointer', color: TEXT.primary, fontWeight: 700 }}>Restore</button>
+              <button onClick={deleteDept} style={{ ...deleteBtn, padding: '8px 12px', borderRadius: 8 }}>Delete</button>
+            </div>
           )}
           {/* Add Course modal */}
           {showCourseForm && (

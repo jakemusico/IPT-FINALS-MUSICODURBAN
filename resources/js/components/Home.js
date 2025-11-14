@@ -7,6 +7,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend,
 export default function Home() {
   const [students, setStudents] = useState([])
   const [faculty, setFaculty] = useState([])
+  const [departments, setDepartments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -31,6 +32,10 @@ export default function Home() {
             const f = js.faculty.data ? js.faculty.data : (Array.isArray(js.faculty) ? js.faculty : [])
             setFaculty(f)
           }
+          if (js.departments) {
+            const d = js.departments.data ? js.departments.data : (Array.isArray(js.departments) ? js.departments : [])
+            setDepartments(d)
+          }
           setLoading(false)
           return
         }
@@ -40,13 +45,25 @@ export default function Home() {
 
       // Fallback to individual endpoints
       try {
-        const [studentsRes, facultyRes] = await Promise.all([
+        const [studentsRes, facultyRes, departmentsRes] = await Promise.all([
           fetch('/api/students').then(r => r.ok ? r.json() : Promise.reject(r)),
-          fetch('/api/faculty').then(r => r.ok ? r.json() : Promise.reject(r)).catch(() => null)
+          fetch('/api/faculty').then(r => r.ok ? r.json() : Promise.reject(r)).catch(() => null),
+          fetch('/api/departments').then(r => r.ok ? r.json() : Promise.reject(r)).catch(() => null)
         ])
         if (!mounted) return
         if (studentsRes && studentsRes.data) setStudents(studentsRes.data)
         if (facultyRes && facultyRes.data) setFaculty(facultyRes.data)
+        if (departmentsRes && departmentsRes.data) setDepartments(departmentsRes.data)
+        // if departments not present, try a separate fetch as a fallback
+        if (!departmentsRes) {
+          try {
+            const dr = await fetch('/api/departments')
+            if (dr.ok) {
+              const djs = await dr.json()
+              if (djs && djs.data) setDepartments(djs.data)
+            }
+          } catch (e) {}
+        }
         setLoading(false)
       } catch (err) {
         // fallback: try students only
@@ -64,6 +81,26 @@ export default function Home() {
   // derive totals
   const totalStudents = students.length
   const totalFaculty = faculty.length || 89 // fallback sample
+  // normalize department names for deduplication and counting
+  const normalizeDeptKey = (s) => {
+    if (!s) return ''
+    return String(s)
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\b(program|programs|education|educ|edu|department|dept|of|the|and)\b/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+
+  let totalDepartments = null
+  if (departments && departments.length) {
+    const seen = {}
+    departments.filter(d => !d.archived).forEach(d => {
+      const key = normalizeDeptKey(d.name || d.code || d.id || '')
+      if (key) seen[key] = true
+    })
+    totalDepartments = Object.keys(seen).length
+  }
 
   // students by course: group by `course` property if present; produce short codes + full names
   const studentsByCourse = useMemo(() => {
@@ -131,20 +168,49 @@ export default function Home() {
     return { codes, names, data }
   }, [students])
 
-  // faculty by department: similar grouping or sample
+  // faculty by department: prefer authoritative departments list when available
   const facultyByDept = useMemo(() => {
+      if (departments && departments.length) {
+        // dedupe departments by normalized name (exclude archived entries)
+        const seen = {}
+        const unique = []
+        departments.filter(d => !d.archived).forEach(d => {
+          const raw = d.name || d.code || d.id || ''
+          const key = normalizeDeptKey(raw)
+          if (!key) return
+          if (!seen[key]) { seen[key] = true; unique.push(d) }
+        })
+      const labels = unique.map(d => d.name || d.code || `Dept ${d.id}`)
+      const data = unique.map(d => {
+        const dKey = normalizeDeptKey(d.name || d.code || d.id || '')
+        return faculty.reduce((acc, f) => {
+          try {
+            if (!f) return acc
+            if (f.department_id && Number(f.department_id) === Number(d.id)) return acc + 1
+            const fKey = normalizeDeptKey(f.department || f.dept || '')
+            if (fKey && dKey && fKey === dKey) return acc + 1
+          } catch (e) {}
+          return acc
+        }, 0)
+      })
+      return { labels, data }
+    }
+
     if (!faculty || faculty.length === 0) {
       return { labels: ['Engineering','Sciences','Mathematics','Business','Liberal Arts'], data: [24,18,12,15,8] }
     }
     const map = {}
+    const labelsByKey = {}
     faculty.forEach(f => {
-      const k = f.department || f.dept || 'General'
-      map[k] = (map[k] || 0) + 1
+      const raw = f.department || f.dept || 'General'
+      const key = normalizeDeptKey(raw) || 'general'
+      labelsByKey[key] = labelsByKey[key] || raw
+      map[key] = (map[key] || 0) + 1
     })
-    const labels = Object.keys(map)
-    const data = labels.map(l => map[l])
+    const labels = Object.keys(map).map(k => labelsByKey[k] || k)
+    const data = Object.keys(map).map(k => map[k])
     return { labels, data }
-  }, [faculty])
+  }, [faculty, departments])
 
   const barData = {
     labels: studentsByCourse.codes || studentsByCourse.labels || [],
@@ -201,7 +267,7 @@ export default function Home() {
         </div>
         <div style={{ background: '#fff', padding: 18, borderRadius: 8, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
           <div style={{ color: '#374151', fontWeight: 600 }}>Departments</div>
-          <div style={{ fontSize: 32, fontWeight: 800, marginTop: 6, color: '#0b2b4a' }}>{facultyByDept.labels.length}</div>
+          <div style={{ fontSize: 32, fontWeight: 800, marginTop: 6, color: '#0b2b4a' }}>{totalDepartments !== null ? totalDepartments : facultyByDept.labels.length}</div>
         </div>
       </div>
 

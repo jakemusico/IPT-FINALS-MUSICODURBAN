@@ -89585,18 +89585,32 @@ function DepartmentDetail() {
             cursor: 'pointer'
           },
           children: "Archive"
-        }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
-          onClick: restoreDept,
+        }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
           style: {
-            background: '#fff',
-            border: '1px solid #e5e7eb',
-            padding: '8px 12px',
-            borderRadius: 8,
-            cursor: 'pointer',
-            color: TEXT.primary,
-            fontWeight: 700
+            display: 'flex',
+            gap: 8,
+            alignItems: 'center'
           },
-          children: "Restore"
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+            onClick: restoreDept,
+            style: {
+              background: '#fff',
+              border: '1px solid #e5e7eb',
+              padding: '8px 12px',
+              borderRadius: 8,
+              cursor: 'pointer',
+              color: TEXT.primary,
+              fontWeight: 700
+            },
+            children: "Restore"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+            onClick: deleteDept,
+            style: _objectSpread(_objectSpread({}, deleteBtn), {}, {
+              padding: '8px 12px',
+              borderRadius: 8
+            }),
+            children: "Delete"
+          })]
         }), showCourseForm && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
           style: {
             position: 'fixed',
@@ -95597,20 +95611,24 @@ function Home() {
     _useState4 = _slicedToArray(_useState3, 2),
     faculty = _useState4[0],
     setFaculty = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState6 = _slicedToArray(_useState5, 2),
-    loading = _useState6[0],
-    setLoading = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    departments = _useState6[0],
+    setDepartments = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
     _useState8 = _slicedToArray(_useState7, 2),
-    error = _useState8[0],
-    setError = _useState8[1];
+    loading = _useState8[0],
+    setLoading = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+    _useState0 = _slicedToArray(_useState9, 2),
+    error = _useState0[0],
+    setError = _useState0[1];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     var mounted = true;
     setLoading(true);
     var tryDashboard = /*#__PURE__*/function () {
       var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-        var resp, js, s, f, _yield$Promise$all, _yield$Promise$all2, studentsRes, facultyRes, _t, _t2;
+        var resp, js, s, f, d, _yield$Promise$all, _yield$Promise$all2, studentsRes, facultyRes, departmentsRes, dr, djs, _t, _t2, _t3;
         return _regenerator().w(function (_context) {
           while (1) switch (_context.p = _context.n) {
             case 0:
@@ -95643,6 +95661,10 @@ function Home() {
                 f = js.faculty.data ? js.faculty.data : Array.isArray(js.faculty) ? js.faculty : [];
                 setFaculty(f);
               }
+              if (js.departments) {
+                d = js.departments.data ? js.departments.data : Array.isArray(js.departments) ? js.departments : [];
+                setDepartments(d);
+              }
               setLoading(false);
               return _context.a(2);
             case 4:
@@ -95660,12 +95682,17 @@ function Home() {
                 return r.ok ? r.json() : Promise.reject(r);
               })["catch"](function () {
                 return null;
+              }), fetch('/api/departments').then(function (r) {
+                return r.ok ? r.json() : Promise.reject(r);
+              })["catch"](function () {
+                return null;
               })]);
             case 7:
               _yield$Promise$all = _context.v;
-              _yield$Promise$all2 = _slicedToArray(_yield$Promise$all, 2);
+              _yield$Promise$all2 = _slicedToArray(_yield$Promise$all, 3);
               studentsRes = _yield$Promise$all2[0];
               facultyRes = _yield$Promise$all2[1];
+              departmentsRes = _yield$Promise$all2[2];
               if (mounted) {
                 _context.n = 8;
                 break;
@@ -95674,12 +95701,39 @@ function Home() {
             case 8:
               if (studentsRes && studentsRes.data) setStudents(studentsRes.data);
               if (facultyRes && facultyRes.data) setFaculty(facultyRes.data);
-              setLoading(false);
-              _context.n = 10;
-              break;
-            case 9:
+              if (departmentsRes && departmentsRes.data) setDepartments(departmentsRes.data);
+              // if departments not present, try a separate fetch as a fallback
+              if (departmentsRes) {
+                _context.n = 14;
+                break;
+              }
               _context.p = 9;
+              _context.n = 10;
+              return fetch('/api/departments');
+            case 10:
+              dr = _context.v;
+              if (!dr.ok) {
+                _context.n = 12;
+                break;
+              }
+              _context.n = 11;
+              return dr.json();
+            case 11:
+              djs = _context.v;
+              if (djs && djs.data) setDepartments(djs.data);
+            case 12:
+              _context.n = 14;
+              break;
+            case 13:
+              _context.p = 13;
               _t2 = _context.v;
+            case 14:
+              setLoading(false);
+              _context.n = 16;
+              break;
+            case 15:
+              _context.p = 15;
+              _t3 = _context.v;
               // fallback: try students only
               fetch('/api/students').then(function (r) {
                 return r.json();
@@ -95688,10 +95742,10 @@ function Home() {
               });
               setError('Could not fetch dashboard (using sample/fallback data).');
               setLoading(false);
-            case 10:
+            case 16:
               return _context.a(2);
           }
-        }, _callee, null, [[6, 9], [0, 5]]);
+        }, _callee, null, [[9, 13], [6, 15], [0, 5]]);
       }));
       return function tryDashboard() {
         return _ref.apply(this, arguments);
@@ -95706,6 +95760,22 @@ function Home() {
   // derive totals
   var totalStudents = students.length;
   var totalFaculty = faculty.length || 89; // fallback sample
+  // normalize department names for deduplication and counting
+  var normalizeDeptKey = function normalizeDeptKey(s) {
+    if (!s) return '';
+    return String(s).toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\b(program|programs|education|educ|edu|department|dept|of|the|and)\b/g, ' ').replace(/\s+/g, ' ').trim();
+  };
+  var totalDepartments = null;
+  if (departments && departments.length) {
+    var seen = {};
+    departments.filter(function (d) {
+      return !d.archived;
+    }).forEach(function (d) {
+      var key = normalizeDeptKey(d.name || d.code || d.id || '');
+      if (key) seen[key] = true;
+    });
+    totalDepartments = Object.keys(seen).length;
+  }
 
   // students by course: group by `course` property if present; produce short codes + full names
   var studentsByCourse = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
@@ -95798,8 +95868,43 @@ function Home() {
     };
   }, [students]);
 
-  // faculty by department: similar grouping or sample
+  // faculty by department: prefer authoritative departments list when available
   var facultyByDept = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
+    if (departments && departments.length) {
+      // dedupe departments by normalized name (exclude archived entries)
+      var _seen = {};
+      var unique = [];
+      departments.filter(function (d) {
+        return !d.archived;
+      }).forEach(function (d) {
+        var raw = d.name || d.code || d.id || '';
+        var key = normalizeDeptKey(raw);
+        if (!key) return;
+        if (!_seen[key]) {
+          _seen[key] = true;
+          unique.push(d);
+        }
+      });
+      var _labels = unique.map(function (d) {
+        return d.name || d.code || "Dept ".concat(d.id);
+      });
+      var _data = unique.map(function (d) {
+        var dKey = normalizeDeptKey(d.name || d.code || d.id || '');
+        return faculty.reduce(function (acc, f) {
+          try {
+            if (!f) return acc;
+            if (f.department_id && Number(f.department_id) === Number(d.id)) return acc + 1;
+            var fKey = normalizeDeptKey(f.department || f.dept || '');
+            if (fKey && dKey && fKey === dKey) return acc + 1;
+          } catch (e) {}
+          return acc;
+        }, 0);
+      });
+      return {
+        labels: _labels,
+        data: _data
+      };
+    }
     if (!faculty || faculty.length === 0) {
       return {
         labels: ['Engineering', 'Sciences', 'Mathematics', 'Business', 'Liberal Arts'],
@@ -95807,19 +95912,24 @@ function Home() {
       };
     }
     var map = {};
+    var labelsByKey = {};
     faculty.forEach(function (f) {
-      var k = f.department || f.dept || 'General';
-      map[k] = (map[k] || 0) + 1;
+      var raw = f.department || f.dept || 'General';
+      var key = normalizeDeptKey(raw) || 'general';
+      labelsByKey[key] = labelsByKey[key] || raw;
+      map[key] = (map[key] || 0) + 1;
     });
-    var labels = Object.keys(map);
-    var data = labels.map(function (l) {
-      return map[l];
+    var labels = Object.keys(map).map(function (k) {
+      return labelsByKey[k] || k;
+    });
+    var data = Object.keys(map).map(function (k) {
+      return map[k];
     });
     return {
       labels: labels,
       data: data
     };
-  }, [faculty]);
+  }, [faculty, departments]);
   var barData = {
     labels: studentsByCourse.codes || studentsByCourse.labels || [],
     datasets: [{
@@ -95985,7 +96095,7 @@ function Home() {
             marginTop: 6,
             color: '#0b2b4a'
           },
-          children: facultyByDept.labels.length
+          children: totalDepartments !== null ? totalDepartments : facultyByDept.labels.length
         })]
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
